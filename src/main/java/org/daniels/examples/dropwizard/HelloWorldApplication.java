@@ -1,10 +1,5 @@
 package org.daniels.examples.dropwizard;
 
-import org.daniels.examples.dropwizard.core.Person;
-import org.daniels.examples.dropwizard.core.Template;
-import org.daniels.examples.dropwizard.health.TemplateHealthCheck;
-import org.daniels.examples.dropwizard.resources.HelloWorldResource;
-
 import io.dropwizard.Application;
 import io.dropwizard.assets.AssetsBundle;
 import io.dropwizard.db.DataSourceFactory;
@@ -13,6 +8,13 @@ import io.dropwizard.migrations.MigrationsBundle;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import io.dropwizard.views.ViewBundle;
+
+import org.daniels.examples.dropwizard.core.Person;
+import org.daniels.examples.dropwizard.core.Template;
+import org.daniels.examples.dropwizard.dao.PersonDAO;
+import org.daniels.examples.dropwizard.health.TemplateHealthCheck;
+import org.daniels.examples.dropwizard.resources.HelloWorldResource;
+import org.daniels.examples.dropwizard.resources.PeopleResource;
 
 public class HelloWorldApplication extends Application<HelloWorldConfiguration> {
     public static void main(String[] args) throws Exception {
@@ -49,11 +51,13 @@ public class HelloWorldApplication extends Application<HelloWorldConfiguration> 
     public void run(HelloWorldConfiguration configuration,
                     Environment environment) throws ClassNotFoundException {
         final Template template = configuration.buildTemplate();
-
+        final PersonDAO peopleDAO = new PersonDAO(hibernateBundle.getSessionFactory());
+        
         environment.healthChecks().register("template", new TemplateHealthCheck(template));
 
 
         environment.jersey().register(new HelloWorldResource(template));
+        environment.jersey().register(new PeopleResource(peopleDAO));
 
     }
 }
